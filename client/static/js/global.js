@@ -1,24 +1,24 @@
-let username = 'chlen';
+let data = {};
 
-async function loadData() {
-    let xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function() {
-        let json = JSON.parse(this.responseText);
-        username = json.username;
-    }
-
-    xhttp.open('GET', '/api/session', true);
-    xhttp.send();
-}
-
-async function load() {
-    await loadData();
-
+function updateUI() {
     document.querySelectorAll('#username').forEach(async el => {
-        el.innerText = username;
+        el.innerText = data.username ? data.username : '';
     });
 }
 
+async function loadData() {
 
+    const res = await fetch('/api/session', {
+        method: 'GET',
+    }).then(res => res.json());
+
+    return res;
+}
+
+async function load() {
+    data = await loadData();
+    updateUI();
+}
+
+load();
 
