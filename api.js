@@ -1,7 +1,10 @@
+const bcrypt = require('bcrypt');
 const express = require('express');
 const res = require('express/lib/response');
 const path = require('path');
 const db = require('./db/db');
+
+const SALT_ROUNDS = 10;
 
 const apiRouter = new express.Router();
 
@@ -18,50 +21,78 @@ apiRouter.use('/', (req, res, next) => {
 });
 
 apiRouter.get('/session', (req, res) => {
-    res.send(`{
-        "username":"jopa"
-    }`);
+    res.end(JSON.stringify(req.session.logged_user));
 });
 
-apiRouter.post('/login', (req, res) => {
+apiRouter.post('/login', async (req, res) => {
     let errors = [];
 
     let userdata = req.body;
 
     let logged = false;
-    if (userdata.username == '' || userdata.password == ''){
+    if (userdata.login == '' || userdata.password == '') {
         errors = [...errors, 'empty fields']
     }
 
-    if (userdata.username.indexOf(" ") != -1 || userdata.password.indexOf(" ") != -1){
+    if (userdata.login.indexOf(" ") != -1 || userdata.password.indexOf(" ") != -1) {
         errors = [...errors, 'No spaces']
     }
 
-    if (userdata.username == 'fenix' && userdata.password == '123') {
-        logged = true;  
-    }
+    if (errors.length <= 0) {
+        let found_user = await db.getUser(userdata.login);
 
-    res.send(JSON.stringify({
-        status: logged ? 'success' : 'fail',
-        errors
-    }));
+        console.log(found_user);
+
+        bcrypt.compare(userdata.password, found_user.password, (err, resp) => {
+            if (!resp) {
+                errors = [...errors, 'incorrect password']
+
+                res.end(JSON.stringify({
+                    status: 'fail',
+                    user_info: {},
+                    errors
+                }));
+
+                return;
+            }
+
+            req.session.logged_user = {
+                login: found_user.login,
+                username: found_user.username,
+                email: found_user.email,
+            },
+
+            res.end(JSON.stringify({
+                status: 'success',
+                user_info: {
+                    username: found_user.username,
+                    email: found_user.email,
+                },
+                errors
+            }));
+        })
+    } else {
+        res.end(JSON.stringify({
+            status: 'fail',
+            user_info: {},
+            errors
+        }));
+    };
 });
 
 apiRouter.post('/register', async (req, res) => {
     let errors = [];
-    
+
     let userdata = req.body;
 
-    await db.setUser('test', userdata)
-
-    if (userdata.username == '' || userdata.password == '' || userdata.email == '' || userdata.repassword == ''){
+    if (userdata.username == '' || userdata.password == '' || userdata.email == '' || userdata.repassword == '' || userdata.login == '') {
         errors = [...errors, 'empty fields']
     }
 
-    if (userdata.username.indexOf(" ") != -1 || userdata.password.indexOf(" ") != -1 || userdata.email.indexOf(" ") != -1 || userdata.repassword.indexOf(" ") != -1){
+    if (userdata.username.indexOf(" ") != -1 || userdata.password.indexOf(" ") != -1 || userdata.email.indexOf(" ") != -1 || userdata.login.indexOf(" ") != -1 || userdata.repassword.indexOf(" ") != -1) {
         errors = [...errors, 'No spaces']
     }
-    
+
     if (!validateEmail(userdata.email)) {
         errors = [...errors, 'invalid email']
     }
@@ -70,15 +101,44 @@ apiRouter.post('/register', async (req, res) => {
         errors = [...errors, "The passwords don't match"]
     }
 
-    if (errors.length <= 0 ){
+    if (errors.length <= 0) {
+        let found_user = await db.getUser(userdata.login);
+
+        if (found_user) {
+            errors = [...errors, 'user already exists']
+            res.end(JSON.stringify({
+                status: 'fail',
+                errors
+            }));
+
+            return;
+        }
+
         console.log('registering new user: ', userdata);
-        
+
+        bcrypt.hash(userdata.password, SALT_ROUNDS, async (err, hash) => {
+            await db.setUser(userdata.login, {
+                login: userdata.login,
+                username: userdata.username,
+                password: hash,
+                creation_time: new Date(),
+            });
+            res.end(JSON.stringify({
+                status: 'success',
+                errors
+            }));
+        });
     } else {
-        res.send(JSON.stringify({
+        res.end(JSON.stringify({
             status: 'fail',
             errors
         }));
     }
+});
+
+apiRouter.post('/logout', async (req, res) =>{
+    req.session.logged_user = {};
+    res.end();
 });
 
 

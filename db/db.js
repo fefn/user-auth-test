@@ -8,7 +8,7 @@ const db = {};
 async function getUser(userid) {
     let db_data = await fs.readFile(db_path);
     try {
-        let db_json = JSON.parse(db_data);
+        let db_json = JSON.parse(db_data, null, '\t');
         return db_json.users[userid];
 
     } catch (error) {
@@ -21,7 +21,7 @@ async function getUser(userid) {
 async function setUser(userid, info) {
     let db_data = await fs.readFile(db_path);
     try {
-        let db_json = JSON.parse(db_data);
+        let db_json = JSON.parse(db_data, null, '\t');
         db_json.users[userid] = info;
 
         await fs.writeFile(db_path, JSON.stringify(db_json));
