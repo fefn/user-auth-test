@@ -141,6 +141,9 @@ apiRouter.post('/logout', async (req, res) =>{
     res.end();
 });
 
+apiRouter.post('/view', async (req, res) =>{
+
+});
 
 module.exports = apiRouter;
 
