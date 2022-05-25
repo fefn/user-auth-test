@@ -40,5 +40,8 @@ app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'client', 'pages', 'register', 'index.html'))
 });
 
+app.get('/view', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'pages', 'view', 'index.html'))
+});
 
 app.listen(8080);

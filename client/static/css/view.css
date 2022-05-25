@@ -1,0 +1,82 @@
+* {
+    color: #2e2e2e;
+}
+
+body {
+    margin-top: 20px;
+    background: #eee;
+    color: #708090;
+    text-decoration: none;
+}
+
+.icon-1x {
+    font-size: 24px !important;
+}
+
+a {
+    text-decoration: none;
+}
+
+.text-primary,
+a.text-primary:focus,
+a.text-primary:hover {
+    color: #00ADBB !important;
+    text-decoration: none;
+}
+
+.text-black,
+.text-hover-black:hover {
+    color: #000 !important;
+    text-decoration: none;
+}
+
+span {
+    text-decoration: none;
+}
+
+.font-weight-bold {
+    font-weight: 700 !important;
+    text-decoration: none;
+}
+
+.bdge {
+    height: 21px;
+    background-color: orange;
+    color: #fff;
+    font-size: 11px;
+    padding: 8px;
+    border-radius: 4px;
+    line-height: 3px;
+}
+
+.comments {
+    text-decoration: underline;
+    text-underline-position: under;
+    cursor: pointer;
+}
+
+.dot {
+    height: 7px;
+    width: 7px;
+    margin-top: 3px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.hit-voting:hover {
+    color: blue;
+}
+
+.hit-voting {
+    cursor: pointer;
+}
+
+input[type="text"] {
+    height: 25vh;
+    text-align: left;
+    position: relative;
+}
+#comment-button{
+    align-self: flex-end;
+}
